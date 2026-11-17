@@ -213,7 +213,6 @@ table.et tr:nth-child(even) td:not(.c){background:#f8fbff}
 </div>
 <nav class="tabs" id="tabs"></nav>
 <main id="main"></main>
-<footer class="ft">All rights reserved by Ranjith Rajapakshe (School Master) · 071 7 375 375</footer>
 </div>
 <div id="report"></div>
 <div id="toast"></div>
@@ -673,34 +672,13 @@ async function fbPull(auto){if(!FBU)return;try{const v=(await FB.db.ref('plans/'
  S=merge(blank(),v.d);migrate();skipCloud=true;dirty=true;flush();skipCloud=false;render();updHdr();fbPushNow(true);toast('☁ Cloud දත්ත ලබාගත්තා');
 }catch(e){toast('Cloud දෝෂය: '+(e.code||e.message),1);}}
 function renderCloud(){const c=fbCfg();let h='<div class="bx"><h3>☁ Cloud (Firebase) සමමුහුර්තය</h3>';
- if(!c){h+='<p class="sm">Firebase console → Project settings → Your apps (Web) හි <b>firebaseConfig</b> // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCM4FmKxHOO8hoB51tfSERNjhsD-WIFeuc",
-  authDomain: "annual-plan-778e4.firebaseapp.com",
-  projectId: "annual-plan-778e4",
-  storageBucket: "annual-plan-778e4.firebasestorage.app",
-  messagingSenderId: "15835364429",
-  appId: "1:15835364429:web:6cd5a5e326630cc726b004",
-  databaseurl:"https://annual-plan-778e4-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-  measurementId: "G-HB3F1Q2CRK"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);</p><textarea id="cfgT" rows="7" placeholder="const firebaseConfig = {\n apiKey: &quot;...&quot;,\n authDomain: &quot;...&quot;,\n databaseURL: &quot;...&quot;, ..."></textarea><button onclick="fbDo(\'cfg\')">සුරකින්න</button>';}
+ if(!c){h+='<p class="sm">Firebase console → Project settings → Your apps (Web) හි <b>firebaseConfig</b> එක මෙතැන paste කරන්න.</p><textarea id="cfgT" rows="7" placeholder="const firebaseConfig = {\n apiKey: &quot;...&quot;,\n authDomain: &quot;...&quot;,\n databaseURL: &quot;...&quot;, ..."></textarea><button onclick="fbDo(\'cfg\')">සුරකින්න</button>';}
  else if(!FBU){h+='<p class="sm">ඊමේල් + මුරපදයෙන් පිවිසෙන්න (පළමු වතාවට "ලියාපදිංචි වන්න").</p><input id="fe" type="email" placeholder="ඊමේල්"><input id="fp" type="password" placeholder="මුරපදය (අවම අකුරු 6)"><button onclick="fbDo(\'in\')">පිවිසෙන්න</button><button class="g" onclick="fbDo(\'up\')">ලියාපදිංචි වන්න</button><div style="margin-top:8px"><button class="g" onclick="fbDo(\'clr\')">Config මකන්න</button></div>';}
  else{h+='<p>පිවිසී ඇත: <b>'+esc(FBU.email)+'</b></p><p class="sm">වෙනස්කම් තත්පර කිහිපයකින් Cloud වෙත ස්වයංක්‍රීයව සුරැකේ.</p><button onclick="fbDo(\'push\')">⬆ දැන් Cloud වෙත සුරකින්න</button><button class="g" onclick="fbDo(\'pull\')">⬇ Cloud එකෙන් ගන්න</button><button class="g" onclick="fbDo(\'out\')">ඉවත් වන්න</button>';}
  h+='<div style="margin-top:10px"><button class="g" onclick="document.getElementById(\'cm\').style.display=\'none\'">වසන්න</button></div></div>';cmEl.innerHTML=h;}
 async function fbDo(a){try{
  if(a==='cfg'){const t=document.getElementById('cfgT').value,o={};for(const m of t.matchAll(/(\w+)\s*:\s*["']([^"']+)["']/g))o[m[1]]=m[2];
+  if(!o.databaseURL&&o.databaseurl)o.databaseURL=o.databaseurl;
   if(!o.apiKey||!o.databaseURL){toast('apiKey හා databaseURL අවශ්‍යයි (Realtime Database එකද සාදන්න)',1);return;}
   localStorage.setItem('aip_fbcfg',JSON.stringify(o));await fbInit();renderCloud();return;}
  if(a==='clr'){localStorage.removeItem('aip_fbcfg');renderCloud();return;}
