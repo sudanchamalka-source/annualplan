@@ -277,7 +277,7 @@ function blank(){
     cocur:['ශිෂ්‍ය භට','බාලදක්ෂ','පාපන්දු','කැරම්'].map(n=>({n,c:''})),
     ach:[],
     goals:'',objs:'',
-    themes:[1,2,3,4,5].map(i=>({name:'Thematic Priority Area '+i,sub:'',oc:'',ock:'',op:'',opk:'',acts:[]})),
+    themes:[1,2,3,4,5].map(i=>({name:'Thematic Priority Area '+i,subs:[newSub()]})),
     appr:{pDate:'',dDate:''},
     adm:'',xs:xsBlank()
   };
@@ -298,12 +298,15 @@ async function load(){
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
 }
 function fillDef(){XS.forEach(x=>{if(!x.d||!S.xs||!S.xs[x.k])return;const rows=S.xs[x.k];if(rows.length<x.r.length)x.r.forEach((v,i)=>{if(!rows[i])rows[i]=Object.fromEntries(x.h.map((_,k)=>['c'+k,k?'':v]));});rows.forEach((r,i)=>{const d=x.d[i];if(!d)return;if(d.every((_,k)=>!r['c'+(k+1)])){d.forEach((v,k)=>{r['c'+(k+1)]=v;});}});});}
-function migrate(){try{fillDef();}catch(e){}if(S.info&&S.info.prov==='සබරගමුව')S.info.prov='ඌව';S.themes.forEach(t=>{['sub','oc','ock','op','opk'].forEach(k=>{if(t[k]==null)t[k]='';});
+function newSub(){return {sub:'',oc:'',ock:'',op:'',opk:'',acts:[]};}
+function normTheme(t){if(!Array.isArray(t.subs)){t.subs=[{sub:t.sub||'',oc:t.oc||'',ock:t.ock||'',op:t.op||'',opk:t.opk||'',acts:Array.isArray(t.acts)?t.acts:[]}];}
+  ['sub','oc','ock','op','opk','acts'].forEach(k=>delete t[k]);if(!t.subs.length)t.subs.push(newSub());}
+function migrate(){try{fillDef();}catch(e){}if(S.info&&S.info.prov==='සබරගමුව')S.info.prov='ඌව';S.themes.forEach(T=>{normTheme(T);T.subs.forEach(t=>{['sub','oc','ock','op','opk'].forEach(k=>{if(t[k]==null)t[k]='';});
   (t.acts||[]).forEach(x=>{if(x.c!=null&&x.c!==''&&x.p==null){x.p=x.c;x.n='1';}
    const ex=[];if(x.o)ex.push('අරමුණ: '+x.o);if(x.out)ex.push('අපේක්ෂිත ප්‍රතිඵලය: '+x.out);
    if(ex.length)x.x=((x.x?x.x+'; ':'')+ex.join('; '));
    delete x.o;delete x.out;delete x.c;
-   ['a','n','p','h','f','k','r','d','x'].forEach(k=>{if(x[k]==null)x[k]='';});if(!x.m)x.m=[];});});}
+   ['a','n','p','h','f','k','r','d','x'].forEach(k=>{if(x[k]==null)x[k]='';});if(!x.m)x.m=[];});});});}
 function merge(b,o){for(const k in o){if(o[k]&&typeof o[k]==='object'&&!Array.isArray(o[k])&&b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))merge(b[k],o[k]);else b[k]=o[k];}return b;}
 let st,dirty=false,LT=0,skipCloud=false;
 function save(){dirty=true;setSv('… සුරකිමින්','#b9770e');clearTimeout(st);st=setTimeout(flush,400);}
@@ -433,15 +436,19 @@ h18:()=>`<div class="card"><h2>1.8 පාසලේ දැක්ම, මෙහෙ
  <p class="hint">මුල් පිටුවේ දැක්ම හා මෙහෙවරත් මේවාම වේ.</p>
  <h3>ප්‍රමුඛතා ඉලක්ක</h3><p class="hint">එක් පේළියකට එක් ඉලක්කයක් — අංක තනිවම වැටේ.</p>${ta('goals','',130)}
  <h3>අරමුණු</h3><p class="hint">එක් පේළියකට එක් අරමුණක්.</p>${ta('objs','',150)}</div>`,
-th:()=>{let h=`<div class="card"><h2>ප්\u200dරමුඛ පරාස අනුව වාර්ෂික ක්\u200dරියාකාරී සැලැස්ම (Thematic Priority Area 1 - 5)</h2><p class="hint">එක් එක් ප්\u200dරමුඛ පරාසය සඳහා <b>ආකෘති පත්\u200dර අංක 02</b> (ප්\u200dරතිඵල රාමුව) හා <b>ආකෘති පත්\u200dර අංක 03</b> (ක්\u200dරියාකාරී සැලැස්ම) ඇතුළත් කරන්න. එක් පේළියකට එක් කරුණක් බැගින් ලියන්න — වාර්තාවේ අංක තනිවම වැටේ. මාස තෝරන්නේ කොටු එබීමෙනි. මුළු වියදම = ඒකක ගණන × ඒකක වියදම (තනිවම ගණනය වේ).</p></div>`;
- S.themes.forEach((t,a)=>{h+=`<div class="card"><h2>ප්\u200dරමුඛ පරාසය ${a+1}</h2><div class="grid2"><label class="f">ප්\u200dරමුඛ පරාසය${inp(`themes.${a}.name`)}</label><label class="f">විෂය${inp(`themes.${a}.sub`)}</label></div>
-  <h3>ආකෘති පත්\u200dර අංක 02 — ප්\u200dරතිඵල රාමුව</h3>
-  <div class="grid2"><label class="f">Outcome / Outcomes${ta(`themes.${a}.oc`,'',110)}</label><label class="f">Outcome Indicators (KPIs)${ta(`themes.${a}.ock`,'',110)}</label><label class="f">Output${ta(`themes.${a}.op`,'',110)}</label><label class="f">Output Indicators (KPIs)${ta(`themes.${a}.opk`,'',110)}</label></div>
-  <h3>ආකෘති පත්\u200dර අංක 03 — 2. Implementation Phase</h3>
-  <div class="tw"><table class="et"><tr><th>අංකය</th><th>ප්\u200dරධාන ක්\u200dරියාකාරකම / අනු ක්\u200dරියාකාරකම</th><th>කාලරාමුව (මාස)</th><th>ඒකක ගණන</th><th>ඒකක වියදම</th><th>මුළු වියදම</th><th>වැය ශීර්ෂය (Rex/Cex)</th><th>මූල්\u200dය ප්\u200dරභවය (S)</th><th>ප්\u200dරධාන කාර්යය සාධක දර්ශකය</th><th>වගකීම</th><th>ක්\u200dරියාකාරකම අවසන් කළ දිනය</th><th>වෙනත්</th><th></th></tr>`;
-  h+=mcRowApp(a);
-  t.acts.forEach((x,r)=>{h+=`<tr><td>${a+1}.${r+1}</td><td>${inp(`themes.${a}.acts.${r}.a`,'l')}</td><td><div class="qb" style="flex-wrap:wrap;width:170px">${MONTHS.map((m,i)=>`<span title="${m}" class="${(x.m||[]).includes(i)?'on':''}" data-mo="${a}.${r}.${i}">${i+1}</span>`).join('')}</div></td><td>${inp(`themes.${a}.acts.${r}.n`,'','number')}</td><td>${inp(`themes.${a}.acts.${r}.p`,'','number')}</td><td class="c">${money(actCost(x))}</td><td><select data-p="themes.${a}.acts.${r}.h">${['','Rex','Cex'].map(o=>`<option ${x.h===o?'selected':''}>${o}</option>`).join('')}</select></td><td>${inp(`themes.${a}.acts.${r}.f`,'l')}</td><td>${inp(`themes.${a}.acts.${r}.k`,'l')}</td><td>${inp(`themes.${a}.acts.${r}.r`,'l')}</td><td>${inp(`themes.${a}.acts.${r}.d`,'','date')}</td><td>${inp(`themes.${a}.acts.${r}.x`,'l')}</td><td class="x"><button class="del" data-del="themes.${a}.acts.${r}">✕</button></td></tr>`;});
-  h+=`<tr><th colspan=5 style="text-align:right">Total — මුළු වියදම (රු.)</th><td class="c">${money(areaCost(a))}</td><td colspan=7></td></tr></table></div><button class="add" data-add="themes.${a}.acts">+ ක්\u200dරියාකාරකමක් එකතු කරන්න</button></div>`;});
+th:()=>{let h=`<div class="card"><h2>ප්\u200dරමුඛ පරාස අනුව වාර්ෂික ක්\u200dරියාකාරී සැලැස්ම (Thematic Priority Area 1 - 5)</h2><p class="hint">එක් එක් ප්\u200dරමුඛ පරාසය සඳහා <b>ආකෘති පත්\u200dර අංක 02</b> (ප්\u200dරතිඵල රාමුව) හා <b>ආකෘති පත්\u200dර අංක 03</b> (ක්\u200dරියාකාරී සැලැස්ම) ඇතුළත් කරන්න. එක් පේළියකට එක් කරුණක් බැගින් ලියන්න — වාර්තාවේ අංක තනිවම වැටේ. මාස තෝරන්නේ කොටු එබීමෙනි. මුළු වියදම = ඒකක ගණන × ඒකක වියදම (තනිවම ගණනය වේ). <b>එක් ප්‍රමුඛ පරාසයකට විෂයන් කිහිපයක් එකතු කළ හැක</b> — එක් එක් විෂයට ආකෘති පත්‍ර 02 හා 03 වෙන වෙනම ලැබේ.</p></div>`;
+  S.themes.forEach((t,a)=>{h+=`<div class="card"><h2>ප්‍රමුඛ පරාසය ${a+1}</h2><label class="f">ප්‍රමුඛ පරාසය${inp(`themes.${a}.name`)}</label>`;
+   t.subs.forEach((u,s)=>{const P=`themes.${a}.subs.${s}`;
+    h+=`<div style="border:1px solid #bcd3ee;border-left:5px solid #1a5fa8;border-radius:10px;padding:10px 12px;margin-top:16px;background:#fbfdff"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">විෂය ${s+1}</h3>${t.subs.length>1?`<button class="del" data-delsub="${a}.${s}">✕ මෙම විෂය ඉවත් කරන්න</button>`:''}</div>
+    <label class="f">විෂය${inp(`${P}.sub`)}</label>
+    <h3>ආකෘති පත්‍ර අංක 02 — ප්‍රතිඵල රාමුව</h3>
+    <div class="grid2"><label class="f">Outcome / Outcomes${ta(`${P}.oc`,'',110)}</label><label class="f">Outcome Indicators (KPIs)${ta(`${P}.ock`,'',110)}</label><label class="f">Output${ta(`${P}.op`,'',110)}</label><label class="f">Output Indicators (KPIs)${ta(`${P}.opk`,'',110)}</label></div>
+    <h3>ආකෘති පත්‍ර අංක 03 — 2. Implementation Phase</h3>
+    <div class="tw"><table class="et"><tr><th>අංකය</th><th>ප්‍රධාන ක්‍රියාකාරකම / අනු ක්‍රියාකාරකම</th><th>කාලරාමුව (මාස)</th><th>ඒකක ගණන</th><th>ඒකක වියදම</th><th>මුළු වියදම</th><th>වැය ශීර්ෂය (Rex/Cex)</th><th>මූල්‍ය ප්‍රභවය (S)</th><th>ප්‍රධාන කාර්යය සාධක දර්ශකය</th><th>වගකීම</th><th>ක්‍රියාකාරකම අවසන් කළ දිනය</th><th>වෙනත්</th><th></th></tr>`;
+    h+=mcRowApp(a,s);
+    u.acts.forEach((x,r)=>{h+=`<tr><td>${actNo(a,s,r)}</td><td>${inp(`${P}.acts.${r}.a`,'l')}</td><td><div class="qb" style="flex-wrap:wrap;width:170px">${MONTHS.map((m,i)=>`<span title="${m}" class="${(x.m||[]).includes(i)?'on':''}" data-mo="${a}.${s}.${r}.${i}">${i+1}</span>`).join('')}</div></td><td>${inp(`${P}.acts.${r}.n`,'','number')}</td><td>${inp(`${P}.acts.${r}.p`,'','number')}</td><td class="c">${money(actCost(x))}</td><td><select data-p="${P}.acts.${r}.h">${['','Rex','Cex'].map(o=>`<option ${x.h===o?'selected':''}>${o}</option>`).join('')}</select></td><td>${inp(`${P}.acts.${r}.f`,'l')}</td><td>${inp(`${P}.acts.${r}.k`,'l')}</td><td>${inp(`${P}.acts.${r}.r`,'l')}</td><td>${inp(`${P}.acts.${r}.d`,'','date')}</td><td>${inp(`${P}.acts.${r}.x`,'l')}</td><td class="x"><button class="del" data-del="${P}.acts.${r}">✕</button></td></tr>`;});
+    h+=`<tr><th colspan=5 style="text-align:right">Total — මුළු වියදම (රු.)</th><td class="c">${money(subCost(a,s))}</td><td colspan=7></td></tr></table></div><button class="add" data-add="${P}.acts">+ ක්‍රියාකාරකමක් එකතු කරන්න</button></div>`;});
+   h+=`<button class="add" data-add="themes.${a}.subs" style="font-weight:700">+ මෙම ප්‍රමුඛ පරාසයට තවත් විෂයක් එකතු කරන්න</button>${t.subs.length>1?`<p style="text-align:right;margin:8px 0 0"><b>ප්‍රමුඛ පරාසය ${a+1} මුළු වියදම: රු. ${money(areaCost(a))}</b></p>`:''}</div>`;});
  return h+`<div class="card"><h3 style="margin:0">මුළු ඇස්තමේන්තුගත වාර්ෂික පිරිවැය: රු. ${money(S.themes.reduce((s,_,a)=>s+areaCost(a),0))}</h3></div>`;},
 ap:()=>`<div class="card"><h2>අනුමැතිය (අග පිටුව)</h2>
  <p>ර/${snY()} 2027 වර්ෂයට අදාළ වාර්ෂික සැලැස්ම අනුමැතිය සඳහා ඉදිරිපත් කරමි.</p>
@@ -451,12 +458,14 @@ ap:()=>`<div class="card"><h2>අනුමැතිය (අග පිටුව)<
 function mc(){return S.medOn.filter(Boolean).length||1;}
 function medH(){return MED.map((m,i)=>S.medOn[i]?`<th>${m}</th>`:'').join('');}
 function nonTot(){const a=sumv(S.nonac.map(r=>r.a)),e=sumv(S.nonac.map(r=>r.e));return{a,e,u:diff(a,e).u};}
-function mCount(a){const c=Array(12).fill(0);S.themes[a].acts.forEach(x=>(x.m||[]).forEach(i=>c[i]++));return c;}
-function refreshMC(a){mCount(a).forEach((v,i)=>{const e=document.getElementById(`mc-${a}-${i}`);if(e)e.textContent=v||'';});}
-function mcRowApp(a){const c=mCount(a);return `<tr class="mcr"><td></td><td style="text-align:left">ක්‍රියාකාරකම් ගණන (මාසය අනුව)</td><td><div class="qb" style="flex-wrap:wrap;width:170px">${c.map((v,i)=>`<span class="mc" title="${MONTHS[i]}" id="mc-${a}-${i}">${v||''}</span>`).join('')}</div></td><td colspan="10"></td></tr>`;}
-function mcRowRep(a){const c=mCount(a);return `<tr class="mcr"><th colspan=2 style="text-align:left">ක්‍රියාකාරකම් ගණන</th>${c.map(v=>`<th>${v||''}</th>`).join('')}<th colspan=9></th></tr>`;}
+function mCount(a,s){const c=Array(12).fill(0);S.themes[a].subs[s].acts.forEach(x=>(x.m||[]).forEach(i=>c[i]++));return c;}
+function refreshMC(a,s){mCount(a,s).forEach((v,i)=>{const e=document.getElementById(`mc-${a}-${s}-${i}`);if(e)e.textContent=v||'';});}
+function mcRowApp(a,s){const c=mCount(a,s);return `<tr class="mcr"><td></td><td style="text-align:left">ක්‍රියාකාරකම් ගණන (මාසය අනුව)</td><td><div class="qb" style="flex-wrap:wrap;width:170px">${c.map((v,i)=>`<span class="mc" title="${MONTHS[i]}" id="mc-${a}-${s}-${i}">${v||''}</span>`).join('')}</div></td><td colspan="10"></td></tr>`;}
+function mcRowRep(a,s){const c=mCount(a,s);return `<tr class="mcr"><th colspan=2 style="text-align:left">ක්‍රියාකාරකම් ගණන</th>${c.map(v=>`<th>${v||''}</th>`).join('')}<th colspan=9></th></tr>`;}
 function actCost(x){const n=num(x.n),p=num(x.p);return(n!=null&&p!=null)?n*p:0;}
-function areaCost(a){return S.themes[a].acts.reduce((s,x)=>s+actCost(x),0);}
+function subCost(a,s){return S.themes[a].subs[s].acts.reduce((q,x)=>q+actCost(x),0);}
+function areaCost(a){return S.themes[a].subs.reduce((q,u)=>q+u.acts.reduce((r,x)=>r+actCost(x),0),0);}
+function actNo(a,s,r){return S.themes[a].subs.length>1?(a+1)+'.'+(s+1)+'.'+(r+1):(a+1)+'.'+(r+1);}
 const money=v=>v?Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
 function tbl(key,heads,fields,o={}){
   const arr=gp(key);return `<div class="tw"><table class="et"><tr><th>#</th>${heads.map(h=>`<th>${h}</th>`).join('')}<th></th></tr>${arr.map((r,i)=>`<tr><td>${i+1}</td>${fields.map((f,j)=>`<td>${inp(`${key}.${i}.${f}`,(o.l||[]).includes(j)?'l':'',(o.nums||[]).includes(j)?'number':'text')}</td>`).join('')}<td class="x"><button class="del" data-del="${key}.${i}">✕</button></td></tr>`).join('')}</table></div><button class="add" data-add="${key}">+ පේළියක් එකතු කරන්න</button>`;
@@ -482,10 +491,11 @@ function updCalc(){ // refresh computed cells without losing focus
 document.addEventListener('click',e=>{const t=e.target;
   if(t.dataset.t!=null)go(+t.dataset.t);
   if(t.dataset.nav)go(cur+ +t.dataset.nav);
-  if(t.dataset.add){const k=t.dataset.add;const arr=gp(k);arr.push(k.includes('.acts')?{a:'',m:[],n:'',p:'',h:'',f:'',k:'',r:'',d:'',x:''}:NEWROW[k]());save();render();}
+  if(t.dataset.delsub){const[a,s]=t.dataset.delsub.split('.').map(Number);const U=S.themes[a].subs;if(U.length>1&&confirm('මෙම විෂය සහ එහි සියලු දත්ත ඉවත් කරන්නද?')){U.splice(s,1);save();render();}return;}
+  if(t.dataset.add){const k=t.dataset.add;const arr=gp(k);arr.push(k.endsWith('.subs')?newSub():k.includes('.acts')?{a:'',m:[],n:'',p:'',h:'',f:'',k:'',r:'',d:'',x:''}:NEWROW[k]());save();render();}
   if(t.dataset.del){const ks=t.dataset.del.split('.');const i=+ks.pop();gp(ks.join('.')).splice(i,1);save();render();}
   if(t.dataset.imgdel){sp(t.dataset.imgdel,'');render();}
-  if(t.dataset.mo){const[a,r,i]=t.dataset.mo.split('.').map(Number);const x=S.themes[a].acts[r];x.m=x.m||[];const k=x.m.indexOf(i);k<0?x.m.push(i):x.m.splice(k,1);x.m.sort((p,q)=>p-q);save();t.classList.toggle('on');refreshMC(a);}
+  if(t.dataset.mo){const[a,s,r,i]=t.dataset.mo.split('.').map(Number);const x=S.themes[a].subs[s].acts[r];x.m=x.m||[];const k=x.m.indexOf(i);k<0?x.m.push(i):x.m.splice(k,1);x.m.sort((p,q)=>p-q);save();t.classList.toggle('on');refreshMC(a,s);}
 });
 function compress(file,cb){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const M=1600;let w=im.width,h=im.height;if(w>M||h>M){const s=M/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);cb(c.toDataURL('image/jpeg',.82));};im.src=r.result;};r.readAsDataURL(file);}
 
@@ -592,20 +602,20 @@ function buildPages(){
   const olist=v=>{const l=lines(v);return l.length?`<ol class="olr">${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:'';};
   const dd=v=>v?v.replace(/-/g,'.'):'';
   const MI=['J','F','M','A','M','J','J','A','S','O','N','D'];
-  S.themes.forEach((t,a)=>{
+  S.themes.forEach((T,a)=>{T.subs.forEach((t,s)=>{
    P.push({h:`<div style="text-align:right;font-weight:700">ආකෘති පත්\u200dර අංක 02</div><h1 class="st">වාර්ෂික ක්\u200dරියාකාරී සැලැස්ම - 2027 (ප්\u200dරතිඵල රාමුව)</h1>
-    <div class="fm"><b>ප්\u200dරමුඛ පරාසය :</b> ${a+1}. ${esc(t.name)}</div><div class="fm"><b>විෂය :</b> ${esc(t.sub)}</div>
-    ${rtab('<tr><th style="width:25%">Outcome / Outcomes</th><th style="width:25%">Outcome Indicators (KPIs)</th><th style="width:25%">Output</th><th style="width:25%">Output Indicators (KPIs)</th></tr>',`<tr style="height:120mm"><td style="vertical-align:top;text-align:left">${olist(t.oc)}</td><td style="vertical-align:top;text-align:left">${olist(t.ock)}</td><td style="vertical-align:top;text-align:left">${olist(t.op)}</td><td style="vertical-align:top;text-align:left">${olist(t.opk)}</td></tr>`)}`,toc:`${a+1}. ${t.name} — ආකෘති පත්\u200dර අංක 02 (ප්\u200dරතිඵල රාමුව)`});
+    <div class="fm"><b>ප්\u200dරමුඛ පරාසය :</b> ${a+1}. ${esc(T.name)}</div><div class="fm"><b>විෂය :</b> ${esc(t.sub)}</div>
+    ${rtab('<tr><th style="width:25%">Outcome / Outcomes</th><th style="width:25%">Outcome Indicators (KPIs)</th><th style="width:25%">Output</th><th style="width:25%">Output Indicators (KPIs)</th></tr>',`<tr style="height:120mm"><td style="vertical-align:top;text-align:left">${olist(t.oc)}</td><td style="vertical-align:top;text-align:left">${olist(t.ock)}</td><td style="vertical-align:top;text-align:left">${olist(t.op)}</td><td style="vertical-align:top;text-align:left">${olist(t.opk)}</td></tr>`)}`,toc:`${a+1}. ${T.name}${T.subs.length>1?' — '+(t.sub||'විෂය '+(s+1)):''} — ආකෘති පත්\u200dර අංක 02 (ප්\u200dරතිඵල රාමුව)`});
    const rows=(t.acts.length?t.acts:Array(6).fill({}));
    P.push({h:`<div style="text-align:right;font-weight:700">ආකෘති පත්\u200dර අංක 03</div><h1 class="st" style="font-size:16pt;margin-bottom:4px">වාර්ෂික ක්\u200dරියාකාරී සැලැස්ම - 2027</h1>
-    <div class="fm"><b>ප්\u200dරමුඛ පරාසය :</b> ${a+1}. ${esc(t.name)} &nbsp;&nbsp;&nbsp; <b>විෂය :</b> ${esc(t.sub)}</div>
+    <div class="fm"><b>ප්\u200dරමුඛ පරාසය :</b> ${a+1}. ${esc(T.name)} &nbsp;&nbsp;&nbsp; <b>විෂය :</b> ${esc(t.sub)}</div>
     <div class="band">2. Implementation Phase</div>
-    <table class="rt f3"><thead><tr><th rowspan=2 style="width:8mm">අංකය</th><th rowspan=2 style="width:42mm">ප්\u200dරධාන ක්\u200dරියාකාරකම/ අනු ක්\u200dරියාකාරකම</th><th colspan=12>කාලරාමුව</th><th rowspan=2>ඒකක ගණන</th><th rowspan=2>ඒකක වියදම</th><th rowspan=2>මුළු වියදම</th><th rowspan=2>වැය ශීර්ෂය (Rex/ Cex)</th><th rowspan=2>මූල්\u200dය ප්\u200dරභවය ( S )</th><th rowspan=2>ප්\u200dරධාන කාර්යය සාධක දර්ශකය</th><th rowspan=2>වගකීම</th><th rowspan=2>ක්\u200dරියාකාරකම අවසන් කළ දිනය</th><th rowspan=2>වෙනත්</th></tr><tr>${MI.map(m=>`<th class="mo">${m}</th>`).join('')}</tr></thead><tbody>${mcRowRep(a)}
-    ${rows.map((x,r)=>`<tr><td>${t.acts.length?(a+1)+'.'+(r+1):'&nbsp;'}</td><td class="l">${esc(x.a)}</td>${MONTHS.map((_,i)=>`<td style="padding:0;${(x.m||[]).includes(i)?'background:#4f93d6;-webkit-print-color-adjust:exact;print-color-adjust:exact':''}"></td>`).join('')}<td>${esc(x.n)}</td><td style="text-align:right">${money(num(x.p))}</td><td style="text-align:right">${money(actCost(x))}</td><td>${esc(x.h)}</td><td class="l">${esc(x.f)}</td><td class="l">${esc(x.k)}</td><td class="l">${esc(x.r)}</td><td>${dd(x.d)}</td><td class="l">${esc(x.x)}</td></tr>`).join('')}
-    <tr><th colspan=15 style="text-align:left">Total</th><th></th><th style="text-align:right">${money(areaCost(a))}</th><th colspan=6></th></tr></tbody></table>`,toc:`${a+1}. ${t.name} — ආකෘති පත්\u200dර අංක 03 (ක්\u200dරියාකාරී සැලැස්ම)`});});
+    <table class="rt f3"><thead><tr><th rowspan=2 style="width:8mm">අංකය</th><th rowspan=2 style="width:42mm">ප්\u200dරධාන ක්\u200dරියාකාරකම/ අනු ක්\u200dරියාකාරකම</th><th colspan=12>කාලරාමුව</th><th rowspan=2>ඒකක ගණන</th><th rowspan=2>ඒකක වියදම</th><th rowspan=2>මුළු වියදම</th><th rowspan=2>වැය ශීර්ෂය (Rex/ Cex)</th><th rowspan=2>මූල්\u200dය ප්\u200dරභවය ( S )</th><th rowspan=2>ප්\u200dරධාන කාර්යය සාධක දර්ශකය</th><th rowspan=2>වගකීම</th><th rowspan=2>ක්\u200dරියාකාරකම අවසන් කළ දිනය</th><th rowspan=2>වෙනත්</th></tr><tr>${MI.map(m=>`<th class="mo">${m}</th>`).join('')}</tr></thead><tbody>${mcRowRep(a,s)}
+    ${rows.map((x,r)=>`<tr><td>${t.acts.length?actNo(a,s,r):'&nbsp;'}</td><td class="l">${esc(x.a)}</td>${MONTHS.map((_,i)=>`<td style="padding:0;${(x.m||[]).includes(i)?'background:#4f93d6;-webkit-print-color-adjust:exact;print-color-adjust:exact':''}"></td>`).join('')}<td>${esc(x.n)}</td><td style="text-align:right">${money(num(x.p))}</td><td style="text-align:right">${money(actCost(x))}</td><td>${esc(x.h)}</td><td class="l">${esc(x.f)}</td><td class="l">${esc(x.k)}</td><td class="l">${esc(x.r)}</td><td>${dd(x.d)}</td><td class="l">${esc(x.x)}</td></tr>`).join('')}
+    <tr><th colspan=15 style="text-align:left">Total</th><th></th><th style="text-align:right">${money(subCost(a,s))}</th><th colspan=6></th></tr></tbody></table>`,toc:`${a+1}. ${T.name}${T.subs.length>1?' — '+(t.sub||'විෂය '+(s+1)):''} — ආකෘති පත්\u200dර අංක 03 (ක්\u200dරියාකාරී සැලැස්ම)`});});});
  const grand=S.themes.reduce((s,_,a)=>s+areaCost(a),0);
- if(grand){const fund={};S.themes.forEach(t=>t.acts.forEach(x=>{const k=(x.f||'නොදක්වා').trim();fund[k]=(fund[k]||0)+actCost(x);}));
-  P.push({h:`<h2 class="sh">ඇස්තමේන්තුගත වාර්ෂික පිරිවැය සාරාංශය</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">${rtab('<tr><th>ප්‍රමුඛතා අංශය</th><th>ක්‍රියාකාරකම්</th><th>පිරිවැය (රු.)</th></tr>',S.themes.map((t,a)=>`<tr><td class="l">${a+1}. ${esc(t.name)}</td><td>${t.acts.length}</td><td style="text-align:right">${money(areaCost(a))}</td></tr>`).join('')+`<tr><th colspan=2>මුළු එකතුව</th><th style="text-align:right">${money(grand)}</th></tr>`)}
+ if(grand){const fund={};S.themes.forEach(t=>t.subs.forEach(u=>u.acts.forEach(x=>{const k=(x.f||'නොදක්වා').trim();fund[k]=(fund[k]||0)+actCost(x);})));
+  P.push({h:`<h2 class="sh">ඇස්තමේන්තුගත වාර්ෂික පිරිවැය සාරාංශය</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">${rtab('<tr><th>ප්‍රමුඛතා අංශය</th><th>ක්‍රියාකාරකම්</th><th>පිරිවැය (රු.)</th></tr>',S.themes.map((t,a)=>`<tr><td class="l">${a+1}. ${esc(t.name)}</td><td>${t.subs.reduce((q,u)=>q+u.acts.length,0)}</td><td style="text-align:right">${money(areaCost(a))}</td></tr>`).join('')+`<tr><th colspan=2>මුළු එකතුව</th><th style="text-align:right">${money(grand)}</th></tr>`)}
    ${rtab('<tr><th>අරමුදල් ප්‍රභවය</th><th>මුදල (රු.)</th><th>ප්‍රතිශතය</th></tr>',Object.entries(fund).map(([k,v])=>`<tr><td class="l">${esc(k)}</td><td style="text-align:right">${money(v)}</td><td>${fp(v/grand*100)}</td></tr>`).join(''))}</div>`,toc:'ඇස්තමේන්තුගත වාර්ෂික පිරිවැය සාරාංශය'});}
  return P;
 }
@@ -632,6 +642,7 @@ function sample(){const s=blank();
  s.goals='සෑම දරුවකුටම උසස් අධ්‍යාපනයට හෝ වෘත්තීය අධ්‍යාපනයට යොමුවීමට අවශ්‍ය මූලික සුදුසුකම් සපුරා දීම.\nනව තාක්ෂණය හා ඩිජිටල් නිපුණතා දරුවන්ට ලබාදීම.\nශිෂ්‍ය පැමිණීම හා සුභසාධනය ශක්තිමත් කිරීම.';
  s.objs='2027 අ.පො.ස.(සා.පෙළ) සඳහා පෙනී සිටින ශිෂ්‍යයන්ගෙන් 80% ක් උසස් පෙළට සුදුසුකම් ලැබීම.\n2027 ශිෂ්‍යත්ව විභාගයෙන් 70% ක් ලකුණු 70 ට වැඩි ලබා ගැනීම.\nශිෂ්‍ය පැමිණීම 92% ඉක්මවීම.';
  const A=(a,m,n,p,f,k,r,d)=>({a,m,n,p,h:'Rex',f,k,r,d,x:''});
+ s.themes.forEach(t=>{Object.assign(t,{sub:'',oc:'',ock:'',op:'',opk:'',acts:[]});delete t.subs;});
  s.themes[0].name='Thematic Priority Area 1 — ඉගෙනුම් ඉගැන්වීම් ගුණාත්මකභාවය';s.themes[0].sub='ගණිතය / ඉංග්‍රීසි / විද්‍යාව';
  Object.assign(s.themes[0],{oc:'ශිෂ්‍යත්ව හා සා/පෙළ ප්‍රතිඵල දියුණු වීම',ock:'ශිෂ්‍යත්වයෙන් 70ට වැඩි ප්‍රතිශතය 70%\nසා/පෙළ සමත් ප්‍රතිශතය 80%',op:'අමතර පන්ති පැවැත්වීම\nවැඩමුළු පැවැත්වීම',opk:'පන්ති 40ක්\nවැඩමුළු 8ක්'});
  s.themes[0].acts=[A('5 ශ්‍රේණි ශිෂ්‍යත්ව අමතර පන්ති',[1,2,3,4,5,6],'6','5000','පා.සං.ස.','පන්ති 40ක්','ප්‍රාථමික අංශ ප්‍රධානී','2027-07-31'),A('සා/පෙළ ගණිත, විද්‍යා සති අන්ත වැඩමුළු',[2,3,4,5,6,7,8],'8','7500','ගුණාත්මක යෙදවුම්','වැඩමුළු 8ක්','ද්විතීයික අංශ ප්‍රධානී','2027-09-30'),A('ඉංග්‍රීසි භාෂා දින වැඩසටහන්',[4,10],'2','12000','පා.සං.ස.','වැඩසටහන් 2ක්','ඉංග්‍රීසි අංශය','2027-11-30')];
@@ -644,6 +655,7 @@ function sample(){const s=blank();
  [[450,450,450,450,450],[505,512,520,520,525],[100,105,108,110,110]].forEach((v,i)=>v.forEach((x,j)=>s.xs.pr[i]['c'+(j+1)]=''+x));
  Object.assign(s.xs.bl[0],{c1:'32',c3:'පන්ති කාමර 3ක් අවශ්‍යයි (සමාන්තර පන්ති 35)'});
  s.appr.pDate='2026-12-15';
+ s.themes.forEach(normTheme);
  return s;}
 
 /* ---------- Firebase (Realtime Database + Auth) ---------- */
